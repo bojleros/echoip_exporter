@@ -48,4 +48,17 @@ latitude_40_60 0.0
 SERVER_URL - default "https://ifconfig.co" - you can use your own echoip endpoint since ifconfig.co does not guarantee response if you querry too often
 REFRESH_INTERVAL - default 60 - how often to poll echoip endpoint for updates (in seconds)
 REFRESH_TIMEOUT - default 3 - echoip response timeout (in seconds)
+PORT - default 19666 - tcp endpoint for prometheus to query
+```
+
+## Running
+
+You can run it as a standalone code just by setting environmentals and calling main.py. It is 2019 however and we have a docker and kubernetes:
+
+```
+Document docker here
+```
+
+```
+Document kubernetes here
 ```
