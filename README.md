@@ -59,6 +59,4 @@ You can run it as a standalone code just by setting environmentals and calling m
 docker run -p 19666:19666 -e TESTS='your tests json goes here' bojleros/echoip_exporter:latest
 ```
 
-```
-Is there anything to document ? Usual deployment with envs and one exposed port ....
-```
+For kubernetes look into examples directory.

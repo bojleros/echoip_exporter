@@ -1,0 +1,89 @@
+---
+apiVersion: v1
+data:
+  TESTS: '{"is_vectra_domain": {"field": "hostname", "test":"regex", "value":".*vectranet.pl"}}'
+kind: ConfigMap
+metadata:
+  name: echoip-exporter-configmap
+apiVersion: v1
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+  labels:
+  name: echoip-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echoip-exporter
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: echoip-exporter
+    spec:
+      containers:
+      - image: bojleros/echoip_exporter:latest
+        imagePullPolicy: IfNotPresent
+        envFrom:
+          - configMapRef:
+              name: echoip-exporter-configmap
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /-/healthy
+            port: 19666
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 30
+        name: echoip-exporter
+        ports:
+        - containerPort: 19666
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /-/ready
+            port: 19666
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 30
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: echoip-exporter
+  name: echoip-exporter
+spec:
+  ports:
+  - name: service
+    port: 80
+    protocol: TCP
+    targetPort: 19666
+  selector:
+    app: echoip-exporter
+  sessionAffinity: None
+  type: ClusterIP
+  
