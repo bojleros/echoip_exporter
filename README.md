@@ -56,9 +56,9 @@ PORT - default 19666 - tcp endpoint for prometheus to query
 You can run it as a standalone code just by setting environmentals and calling main.py. It is 2019 however and we have a docker and kubernetes:
 
 ```
-Document docker here
+docker run -p 19666:19666 -e TESTS='your tests json goes here' bojleros/echoip_exporter:latest
 ```
 
 ```
-Document kubernetes here
+Is there anything to document ? Usual deployment with envs and one exposed port ....
 ```
