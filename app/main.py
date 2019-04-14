@@ -25,6 +25,7 @@ class Envconf():
         c['server_url'] = e.get("SERVER_URL", "https://ifconfig.co")
         c['refresh_interval'] = int(e.get("REFRESH_INTERVAL", 60))
         c['refresh_timeout'] = float(e.get("REFRESH_TIMEOUT", 3))
+        c['metric_prefix'] = e.get("METRIC_PREFIX", "echoip")
         c['port'] = int(e.get("PORT", 19666))
 
         try:
@@ -47,6 +48,8 @@ class Envconf():
                 log("Missing keys in test: %s" % str(t))
                 sys.exit(-4)
 
+        c['endpoint'] = c['server_url'].split('/')[2]
+
         # todo: variable type and format validation
 
         self.conf = c
@@ -62,12 +65,14 @@ class Collector:
 
         self.tests = {}
 
-        self.last_refresh = Gauge("last_refresh_timestamp", "")
-        self.last_refresh.set(-1)
+        self.last_refresh = Gauge(self.conf['metric_prefix'] +
+                                  "_last_refresh_timestamp", "", ['endpoint'])
+        self.last_refresh.labels(self.conf['endpoint']).set(-1)
 
+        self.tests = Gauge(self.conf['metric_prefix'] + "_evaluation_result",
+                           "1 - true, 0 - false, -1 - connection error", ['endpoint', 'test'])
         for t in self.conf['tests']:
-            self.tests[t] = Gauge(str(t), "")
-            self.tests[t].set(-1)
+            self.tests.labels(self.conf['endpoint'], t).set(-1)
 
         self.process()
         start_http_server(self.conf['port'])
@@ -83,10 +88,10 @@ class Collector:
         except Exception as e:
             log("Refresh error : %s" % str(e))
             for t in self.conf['tests']:
-                self.tests[t].set(-1)
+                self.tests.labels(self.conf['endpoint'], t).set(-1)
             return False
         else:
-            self.last_refresh.set(int(time.time()))
+            self.last_refresh.labels(self.conf['endpoint']).set(int(time.time()))
             self.body = j
             return True
 
@@ -98,35 +103,35 @@ class Collector:
 
             if te['test'] == 'regex':
                 if re.match(te['value'], self.body[te['field']]):
-                    self.tests[t].set(1)
+                    self.tests.labels(self.conf['endpoint'], t).set(1)
                 else:
-                    self.tests[t].set(0)
+                    self.tests.labels(self.conf['endpoint'], t).set(0)
 
             if te['test'] == 'eq':
                 if float(te['value']) == float(self.body[te['field']]):
-                    self.tests[t].set(1)
+                    self.tests.labels(self.conf['endpoint'], t).set(1)
                 else:
-                    self.tests[t].set(0)
+                    self.tests.labels(self.conf['endpoint'], t).set(0)
 
             if te['test'] == 'gt':
                 if float(te['value']) < float(self.body[te['field']]):
-                    self.tests[t].set(1)
+                    self.tests.labels(self.conf['endpoint'], t).set(1)
                 else:
-                    self.tests[t].set(0)
+                    self.tests.labels(self.conf['endpoint'], t).set(0)
 
             if te['test'] == 'lt':
                 if float(te['value']) > float(self.body[te['field']]):
-                    self.tests[t].set(1)
+                    self.tests.labels(self.conf['endpoint'], t).set(1)
                 else:
-                    self.tests[t].set(0)
+                    self.tests.labels(self.conf['endpoint'], t).set(0)
 
             if te['test'] == 'inrange':
                 thr = te['value'].split(':')
 
                 if float(thr[0]) < float(self.body[te['field']]) and float(thr[1]) > float(self.body[te['field']]):
-                    self.tests[t].set(1)
+                    self.tests.labels(self.conf['endpoint'], t).set(1)
                 else:
-                    self.tests[t].set(0)
+                    self.tests.labels(self.conf['endpoint'], t).set(0)
 
     def process(self):
         if bool(self.sched):
