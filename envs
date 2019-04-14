@@ -1,0 +1,3 @@
+# testing envs
+export TESTS='{"is_vectra_domain": {"field": "hostname", "test":"regex", "value":".*vectranet.pl"}, "is_exact_ip": {"field": "ip_decimal", "test":"eq", "value":"1567197064.1"}, "longitude_gt20": {"field": "longitude", "test":"gt", "value":"20.5"}, "latitude_40_60": {"field": "latitude", "test":"inrange", "value":"40:50"} }'
+export REFRESH_INTERVAL=10
