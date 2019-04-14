@@ -25,21 +25,15 @@ This environmental variable defines a list of tests , each having it's own gauge
 Example prometheus endpoint output:
 
 ```
-# HELP last_refresh_timestamp
-# TYPE last_refresh_timestamp gauge
-last_refresh_timestamp 1.555232876e+09
-# HELP is_vectra_domain
-# TYPE is_vectra_domain gauge
-is_vectra_domain 1.0
-# HELP is_exact_ip
-# TYPE is_exact_ip gauge
-is_exact_ip 0.0
-# HELP longitude_gt20
-# TYPE longitude_gt20 gauge
-longitude_gt20 1.0
-# HELP latitude_40_60
-# TYPE latitude_40_60 gauge
-latitude_40_60 0.0
+# HELP echoip_last_refresh_timestamp
+# TYPE echoip_last_refresh_timestamp gauge
+echoip_last_refresh_timestamp{endpoint="ifconfig.co"} 1.55525392e+09
+# HELP echoip_evaluation_result 1 - true, 0 - false, -1 - connection error
+# TYPE echoip_evaluation_result gauge
+echoip_evaluation_result{endpoint="ifconfig.co",test="is_vectra_domain"} 1.0
+echoip_evaluation_result{endpoint="ifconfig.co",test="is_exact_ip"} 0.0
+echoip_evaluation_result{endpoint="ifconfig.co",test="longitude_gt20"} 1.0
+echoip_evaluation_result{endpoint="ifconfig.co",test="latitude_40_60"} 1.0
 ```
 
 ### Optional environmental variables
@@ -49,6 +43,7 @@ SERVER_URL - default "https://ifconfig.co" - you can use your own echoip endpoin
 REFRESH_INTERVAL - default 60 - how often to poll echoip endpoint for updates (in seconds)
 REFRESH_TIMEOUT - default 3 - echoip response timeout (in seconds)
 PORT - default 19666 - tcp endpoint for prometheus to query
+METRIC_PREFIX - default "echoip"
 ```
 
 ## Running
